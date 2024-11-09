@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% macro has_featured_and_non_featured(directory) %}
+    {% set featured_found = false %}
+    {% set non_featured_found = false %}
+
+    {% for child in directory.children recursive %}
+        {% if child.__class__.__name__ == 'File' %}
+            {% if child.document.frontmatter.featured == 'true' %}
+                {% set featured_found = true %}
+            {% else %}
+                {% set non_featured_found = true %}
+            {% endif %}
+        {% elif child.__class__.__name__ == 'Directory' %}
+            {% set result = has_featured_and_non_featured(child) %}
+            {% set featured_found = featured_found or result[0] %}
+            {% set non_featured_found = non_featured_found or result[1] %}
+        {% endif %}
+    {% endfor %}
+
+    {{ return([featured_found, non_featured_found]) }}
+{% endmacro %}
+
+{% macro render_directory(directory, show_all=False) %}
+<div class="list {{ directory.name|lower }}">
+    <ul>
+        {% for child in directory.children %}
+            {% if child.__class__.__name__ == 'Directory' %}
+                {% set has_featured = child.children | selectattr('document.frontmatter.featured', 'equalto', 'true') | list %}
+                {% if show_all or has_featured %}
+                    <li class="dir">
+                        <h2><a href="/{{ child.formatted_path }}/index.html">{{ child.name }}</a></h2>
+                        {{ render_directory(child, show_all) }}
+                    </li>
+                {% endif %}
+            {% elif child.__class__.__name__ == 'File' %}
+                {% if show_all or child.document.frontmatter.featured == 'true' %}
+                    <li>
+                        <a href="/{{ child.formatted_path.replace('.md', '.html') }}">{{ child.name }}</a>
+                        {% if child.document.frontmatter.subtitle %}
+                            <span>{{ child.document.frontmatter.subtitle }}</span>
+                        {% endif %}
+                    </li>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    </ul>
+    {% if directory.has_mixed_featured and not show_all %}
+        <a href="/{{ directory.formatted_path }}/index.html" class="all">All {{ directory.name }}...</a>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% block content %}
+<div class="homepage">
+    {% if 'about' in sections %}
+        <h2>{{ sections['about'].name }}</h2>
+        {{ render_directory(sections['about'], show_all=True) }}
+    {% endif %}
+
+    <h2>Cooking</h2>
+    <div class="list">
+        <ul>
+            <li>
+                <a href="/cooking.html">Photos</a>
+                <span>Photos of some of the things I've cooked.</span>
+            </li>
+        </ul>
+    </div>
+
+    {% if 'recipes' in sections %}
+        <h3>{{ sections['recipes'].name }}</h3>
+        {{ render_directory(sections['recipes']) }}
+    {% endif %}
+
+    {% for section_name, section in sections.items() %}
+        {% if section_name not in ['about', 'recipes'] %}
+            <h2>{{ section.name }}</h2>
+            {{ render_directory(section) }}
+        {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block footer %}
+<p>The meek shall inherit the dearth.</p>
+{% endblock %}

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>kestell.org {% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/theme.css" />
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+            document.querySelectorAll('img.responsive-image[data-light][data-dark]').forEach(img => {
+                const correctSrc = isDarkMode ? img.dataset.dark : img.dataset.light;
+    
+                // Create a new Image object to preload the correct image
+                const preloadedImage = new Image();
+                preloadedImage.src = correctSrc;
+    
+                // Once the image has loaded, set it as the src and reveal it
+                preloadedImage.onload = () => {
+                    img.src = correctSrc;
+                    img.style.opacity = 1;
+                };
+            });
+    
+            // Function to update images on color scheme change
+            function updateImagesForDarkMode() {
+                document.querySelectorAll('img.responsive-image[data-light][data-dark]').forEach(img => {
+                    const correctSrc = window.matchMedia('(prefers-color-scheme: dark)').matches ? img.dataset.dark : img.dataset.light;
+    
+                    // Preload and update src if it changes
+                    const preloadedImage = new Image();
+                    preloadedImage.src = correctSrc;
+                    preloadedImage.onload = () => {
+                        img.src = correctSrc;
+                    };
+                });
+            }
+    
+            // Listen for changes in color scheme
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateImagesForDarkMode);
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const images = document.querySelectorAll('img.gallery-thumbnail');
+            images.forEach(img => {
+                img.onload = () => {
+                    img.style.opacity = 1;
+                };
+            }); 
+        });
+
+    </script>
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <header>
+        <h1>kestell.org</h1>
+        {% block breadcrumbs %}{% endblock %}
+    </header>
+
+    {% block content %}{% endblock %}
+
+    <footer>
+        {% block footer %}{% endblock %}
+    </footer>
+</body>
+</html>

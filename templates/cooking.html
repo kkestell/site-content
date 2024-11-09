@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %} | Cooking{% endblock %}
+
+{% block breadcrumbs %}
+<p><a href="/">Home</a> <span class="separator">/</span> Cooking</p>
+{% endblock %}
+
+{% block content %}
+<main class="page">
+    <h1>Cooking</h1>
+    <div class="gallery">
+        {% for image in gallery_images %}
+        <a href="{{ image.image_path }}" class="gallery-item" target="_blank">
+            <img src="{{ image.thumbnail_path }}" loading="lazy" class="gallery-thumbnail" width="350" height="350" />
+        </a>
+        {% endfor %}
+    </div>
+</main>
+{% endblock %}
+
+{% block footer %}
+<p>Last updated on {{ updated_on }}</p>
+{% endblock %}
